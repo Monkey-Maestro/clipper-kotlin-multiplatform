@@ -7,4 +7,4 @@ Original Angus Johnson project's documentation:
 http://www.angusj.com/delphi/clipper.php
 http://www.angusj.com/delphi/clipper/documentation/Docs/Overview/_Body.htm
 
-We just made the port kotlin multiplatform compatible, by removing all specific methods.
+We just made the port kotlin multiplatform compatible, by removing all platform-specific methods.
