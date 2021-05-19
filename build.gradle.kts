@@ -1,9 +1,15 @@
+import java.lang.System.getenv
+
 plugins {
-    kotlin("multiplatform") version "1.4.21"
+    id("maven-publish")
+    kotlin("multiplatform") version "1.5.0"
 }
 
-group = "de.urbanistic"
-version = "1.0.0"
+allprojects {
+    group = "de.urbanistic"
+    version = System.getenv("GITHUB_REF")?.split('/')?.last() ?: "development"
+    //version = "1.0.0"
+}
 
 repositories {
     mavenCentral()
@@ -60,5 +66,21 @@ kotlin {
         }
         val nativeMain by getting
         val nativeTest by getting
+    }
+}
+
+//publish to github maven repository using github actions
+getenv("GITHUB_REPOSITORY")?.let {
+    publishing {
+        repositories {
+            maven {
+                name = "github"
+                url = uri("https://maven.pkg.github.com/$it")
+                credentials(PasswordCredentials::class){
+                    username = System.getenv("GITHUB_ACTOR")
+                    password = System.getenv("GITHUB_TOKEN")
+                }
+            }
+        }
     }
 }

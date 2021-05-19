@@ -1,3 +1,2 @@
-
-rootProject.name = "clipper"
+rootProject.name = "clipper-kotlin"
 

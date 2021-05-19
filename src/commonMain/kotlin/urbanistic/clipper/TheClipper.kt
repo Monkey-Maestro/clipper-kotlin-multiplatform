@@ -3799,7 +3799,7 @@ class ClipperOffset(
         }
     }
 
-    fun offsetPoint(j: Int, k: Int, jointype: JoinType) {
+    private fun offsetPoint(j: Int, k: Int, jointype: JoinType) {
         //cross product ...
         val normalsK = normals[k]
         val normalsJ = normals[j]
