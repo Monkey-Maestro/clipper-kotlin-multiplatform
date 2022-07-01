@@ -43,7 +43,7 @@ inline fun pathOf(vararg elements: LongPoint): Path = mutableListOf(*elements)
 fun Path(size: Int): Path = ArrayList(size)
 
 private fun mul (in1 : Long, in2 : Long) : Long{
-    return in1 * in2;
+    return in1 * in2
 }
 
 inline fun Path(size: Int, init: (index: Int) -> LongPoint) = MutableList(size, init)
@@ -199,8 +199,8 @@ val Paths.bound: IntRect
         val size = size
         while (i < size && get(i).size == 0) i++
         if (i == size) return IntRect(0, 0, 0, 0)
-        var left: Long = 0 // lateinit
-        var top: Long = 0 // lateinit
+        var left: Long // lateinit
+        var top: Long // lateinit
         get(i)[0].let { left = it.x; top = it.y }
         val result = IntRect(left = left, right = left, top = top, bottom = top)
         (i until size).forEach {
@@ -515,8 +515,8 @@ private val IntersectNode.hasAdjacentEdges: Boolean
     get() = edge1.nextInSEL == edge2 || edge1.prevInSEL == edge2
 
 internal object myIntersectNodeComparator : Comparator<IntersectNode> {
-    override fun compare(node1: IntersectNode, node2: IntersectNode): Int {
-        val i = node2.pt.y - node1.pt.y
+    override fun compare(a: IntersectNode, b: IntersectNode): Int {
+        val i = b.pt.y - a.pt.y
         return if (i > 0) 1 else if (i < 0) -1 else 0
     }
 }
@@ -732,12 +732,12 @@ open class ClipperBase {
     // ???
     open fun clear() {
         disposeLocalMinimaList()
-        edges.forEach { edgeList ->
-            edgeList.clear()
-        }
+        edges.forEach { it.clear() }
+        edges.clear()
+        useFullRange = false
+        hasOpenPaths = false
     }
 
-    // ???
     private fun disposeLocalMinimaList() {
         while (minimaList != null) {
             val tmpLm = minimaList!!.next
@@ -757,8 +757,8 @@ open class ClipperBase {
         }
     }
 
-    private fun findNextLocMin(e: TEdge): TEdge {
-        var e = e
+    private fun findNextLocMin(e_: TEdge): TEdge {
+        var e = e_
         var e2: TEdge
         while (true) {
             while (e.bot != e.prev.bot || e.curr == e.top) e = e.next
@@ -773,8 +773,8 @@ open class ClipperBase {
         return e
     }
 
-    private fun processBound(e: TEdge, leftBoundIsForward: Boolean): TEdge {
-        var e = e
+    private fun processBound(e_: TEdge, leftBoundIsForward: Boolean): TEdge {
+        var e = e_
         var eStart: TEdge
         var result = e
         var horz: TEdge
@@ -1235,11 +1235,11 @@ private fun topX(edge: TEdge, currentY: Long): Long {
     return edge.bot.x + (edge.dx * (currentY - edge.bot.y)).roundToLong()
 }
 
-private fun parseFirstLeft(firstLeft: OutRec?): OutRec? {
-    var firstLeft = firstLeft
+private fun parseFirstLeft(firstLeft_: OutRec?): OutRec? {
+    var firstLeft = firstLeft_
     while (firstLeft != null && firstLeft.pts == null)
         firstLeft = firstLeft.firstLeft
-    return firstLeft // ???
+    return firstLeft
 }
 
 private fun distanceSqrd(pt1: LongPoint, pt2: LongPoint): Double {
@@ -1483,8 +1483,8 @@ class Clipper(
             reset()
             sortedEdges = null
             maxima = null
-            var botY = ZERO
-            var topY = ZERO
+            var botY: Long
+            var topY: Long
             Out<Long>().let { out ->
                 if (!popScanbeam(out)) return false
                 botY = out.get()
@@ -1541,7 +1541,7 @@ class Clipper(
     }
 
     private fun insertLocalMinimaIntoAEL(botY: Long) {
-        var lm: LocalMinima? = null
+        var lm: LocalMinima?
 
         while (Out<LocalMinima?>().let { out ->
                 popLocalMinima(botY, out).also {
@@ -1632,8 +1632,8 @@ class Clipper(
         }
     }
 
-    private fun insertEdgeIntoAEL(edge: TEdge, startEdge: TEdge?) {
-        var startEdge = startEdge
+    private fun insertEdgeIntoAEL(edge: TEdge, startEdge_: TEdge?) {
+        var startEdge = startEdge_
         val activeEdges = activeEdges
         if (activeEdges == null) {
             edge.prevInAEL = null
@@ -1995,11 +1995,11 @@ class Clipper(
         else
             polyOuts[e.outIdx].pts!!.prev
 
-    private fun horzSegmentsOverlap(seg1a: Long, seg1b: Long, seg2a: Long, seg2b: Long): Boolean {
-        var seg1a = seg1a
-        var seg1b = seg1b
-        var seg2a = seg2a
-        var seg2b = seg2b
+    private fun horzSegmentsOverlap(seg1a_: Long, seg1b_: Long, seg2a_: Long, seg2b_: Long): Boolean {
+        var seg1a = seg1a_
+        var seg1b = seg1b_
+        var seg2a = seg2a_
+        var seg2b = seg2b_
 
         if (seg1a > seg1b) {
             val tmp = seg1a
@@ -2059,8 +2059,8 @@ class Clipper(
             return dx1p >= dx2p && dx1p >= dx2n || dx1n >= dx2p && dx1n >= dx2n
     }
 
-    private fun getBottomPt(pp: OutPt): OutPt {
-        var pp = pp
+    private fun getBottomPt(pp_: OutPt): OutPt {
+        var pp = pp_
         var dups: OutPt? = null
         var p = pp.next
         while (p != pp) {
@@ -2349,6 +2349,7 @@ class Clipper(
                             addLocalMinPoly(e1, e2, pt)
                     ClipType.Xor ->
                         addLocalMinPoly(e1, e2, pt)
+                    else -> {}
                 }
             else
                 swapSides(e1, e2)
@@ -2370,7 +2371,7 @@ class Clipper(
     }
 
     private fun processHorizontals() {
-        var horzEdge: TEdge? = null //m_SortedEdges
+        var horzEdge: TEdge? //m_SortedEdges
         while (Out<TEdge?>().let { out ->
                 popEdgeFromSEL(out).also {
                     horzEdge = out.get()
@@ -2397,11 +2398,11 @@ class Clipper(
         }
     }
 
-    private fun processHorizontal(horzEdge: TEdge) {
-        var horzEdge = horzEdge
-        var dir: Direction? = null
-        var horzLeft: Long = ZERO
-        var horzRight: Long = ZERO
+    private fun processHorizontal(horzEdge_: TEdge) {
+        var horzEdge = horzEdge_
+        var dir: Direction?
+        var horzLeft: Long
+        var horzRight: Long
         val IsOpen = horzEdge.windDelta == 0
 
         run {
@@ -3045,13 +3046,13 @@ class Clipper(
     }
 
     internal fun joinHorz(
-        op1: OutPt, op1b: OutPt, op2: OutPt, op2b: OutPt,
+        op1_: OutPt, op1b_: OutPt, op2_: OutPt, op2b_: OutPt,
         pt: LongPoint, discardLeft: Boolean
     ): Boolean {
-        var op1 = op1
-        var op1b = op1b
-        var op2 = op2
-        var op2b = op2b
+        var op1 = op1_
+        var op1b = op1b_
+        var op2 = op2_
+        var op2b = op2b_
         val dir1 = if (op1.pt.x > op1b.pt.x) Direction.RightToLeft else Direction.LeftToRight
         val dir2 = if (op2.pt.x > op2b.pt.x) Direction.RightToLeft else Direction.LeftToRight
         if (dir1 == dir2) return false
@@ -3184,17 +3185,17 @@ class Clipper(
                 op1 = op1.prev
             while (op1b.next.pt.y == op1b.pt.y && op1b.next != op1 && op1b.next != op2)
                 op1b = op1b.next
-            if (op1b.next == op1 || op1b.next == op2) return false; //a flat 'polygon'
+            if (op1b.next == op1 || op1b.next == op2) return false //a flat 'polygon'
 
             op2b = op2
             while (op2.prev.pt.y == op2.pt.y && op2.prev != op2b && op2.prev != op1b)
                 op2 = op2.prev
             while (op2b.next.pt.y == op2b.pt.y && op2b.next != op2 && op2b.next != op1)
                 op2b = op2b.next
-            if (op2b.next == op2 || op2b.next == op1) return false; //a flat 'polygon'
+            if (op2b.next == op2 || op2b.next == op1) return false //a flat 'polygon'
 
-            var left: Long = ZERO
-            var right: Long = ZERO
+            var left: Long
+            var right: Long
             //Op1 -. Op1b & Op2 -. Op2b are the extremites of the horizontal edges
 
             if (!run {
@@ -3211,7 +3212,7 @@ class Clipper(
             //DiscardLeftSide: when overlapping edges are joined, a spike will created
             //which needs to be cleaned up. However, we don't want Op1 or Op2 caught up
             //on the discard Side as either may still be needed for other joins ...
-            val pt: LongPoint = LongPoint()
+            val pt = LongPoint()
             val discardLeftSide: Boolean
             when {
                 op1.pt.x in left..right -> {
@@ -3471,7 +3472,7 @@ fun getUnitNormal(pt1: LongPoint, pt2: LongPoint): DoublePoint {
 
 class ClipperOffset(
     var miterLimit: Double = 2.0,
-    var arcTolerance: Double = ClipperOffset.DEF_ARC_TOLERANCE
+    var arcTolerance: Double = DEF_ARC_TOLERANCE
 ) {
     companion object {
         const val TWO_PI = PI * 2.0

@@ -1,44 +1,18 @@
 import java.util.*
 
-
-//We need to differentiate if we are building local or if Github Actions are used to build the Project!
-var user_name : String
-var user_pat : String
-var maven_url : String
-var current_spacecenter_tag : String = "1.0.0"
-if(System.getenv("GITHUB_REPOSITORY") != null){
-    //if we are in github we use the environmental variables provided by github
-    user_name = System.getenv("GITHUB_ACTOR")
-    user_pat = System.getenv("GITHUB_TOKEN")
-    maven_url = "https://maven.pkg.github.com/${System.getenv("GITHUB_TOKEN")}"
-    current_spacecenter_tag = System.getenv("GITHUB_TAG")
-}else{
-    //else we need to use our cutsom credentials stored in the local.properties file
-    val local = Properties()
-    local.load(rootProject.file("local.properties").inputStream())
-    user_name = local.getProperty("github.user") //
-    user_pat = local.getProperty("github.token") // pat with scope: read packages
-    maven_url = local.getProperty("maven.url")
-}
-
-
 plugins {
     id("maven-publish")
-    kotlin("multiplatform") version "1.5.10"
+    kotlin("multiplatform") version "1.7.0"
 }
-
 
 allprojects {
     group = "de.urbanistic"
-    version = current_spacecenter_tag
-    //version = "1.0.1"
+    version = "1.0.0"
 }
-
 
 repositories {
     mavenCentral()
 }
-
 
 kotlin {
     jvm {
@@ -68,7 +42,6 @@ kotlin {
         else -> throw GradleException("Host OS is not supported in Kotlin/Native.")
     }
 
-    
     sourceSets {
         val commonMain by getting
         val commonTest by getting {
@@ -98,11 +71,17 @@ kotlin {
 publishing {
     repositories {
         maven {
-            name = "github"
-            url = uri(maven_url)
+            val local = Properties()
+            local.load(rootProject.file("local.properties").inputStream())
+            val user_name_repsy = local.getProperty("repsy.user")
+            val user_pw_repsy = local.getProperty("repsy.pw")
+            val maven_url_repsy = local.getProperty("repsy.url")
+
+            name = "repsi"
+            url = uri(maven_url_repsy)
             credentials(PasswordCredentials::class) {
-                username = user_name
-                password = user_pat
+                username = user_name_repsy
+                password = user_pw_repsy
             }
         }
     }
